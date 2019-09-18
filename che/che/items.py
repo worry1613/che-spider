@@ -8,7 +8,18 @@
 import scrapy
 
 
-class CheItem(scrapy.Item):
+class CheUserItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
-    pass
+    _id = scrapy.Field()
+    _url = scrapy.Field()
+
+class CheArticleItem(scrapy.Item):
+    # define the fields for your item here like:
+    # name = scrapy.Field()
+    _id = scrapy.Field()
+    _user = scrapy.Field()
+    _title = scrapy.Field()
+    _keywords = scrapy.Field()
+    _content = scrapy.Field()
+    _datetime = scrapy.Field()
