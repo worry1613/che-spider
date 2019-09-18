@@ -160,3 +160,6 @@ class RotateUserAgentMiddleware(UserAgentMiddleware):
         ua = self._user_agent(spider)
         if ua:
             request.headers.setdefault('User-Agent', ua)
+            request.headers.setdefault('Accept', '*/*')
+            request.headers.setdefault('Accept-Language', 'zh-CN',)
+            request.headers.setdefault('Connection', 'Keep-Alive')
