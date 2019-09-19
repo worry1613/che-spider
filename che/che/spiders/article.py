@@ -26,23 +26,29 @@ class ArticleSpider(Spider):
     # allowed_domains = ["blog.csdn.net"]
     # redis_key = BLOGKEY
     start_urls = [
-    # 'https://www.toutiao.com/item/6690254170995294732/',
-    #               'https://www.toutiao.com/item/6690891251891307011/',
-    #               'https://www.toutiao.com/item/6692106673466638862/',
-    #               'https://www.toutiao.com/item/6693087483615248899/',
-    #               'https://www.toutiao.com/item/6693092734288265736/',
-    #               'https://www.toutiao.com/item/6693566431528747534/',
-    #               'https://www.toutiao.com/item/6694322397580886532/',
-    #               'https://www.toutiao.com/item/6695830023934312963/',
-    #               'https://www.toutiao.com/item/6696902078956044811/',
-    #               'https://www.toutiao.com/item/6701582615205380107/',
-    #               'https://www.toutiao.com/item/6703103984862756876/',
-    #               'https://www.toutiao.com/item/6705089602669003277/',
-    #               'https://www.toutiao.com/item/6712845808070296078/',
-    #               'https://www.toutiao.com/item/6716099962297385484/',
-                  # 'https://www.toutiao.com/item/6723146523133083652/',
+    'https://www.toutiao.com/item/6690254170995294732/',
+                  'https://www.toutiao.com/item/6690891251891307011/',
+                  'https://www.toutiao.com/item/6692106673466638862/',
+                  'https://www.toutiao.com/item/6693087483615248899/',
+                  'https://www.toutiao.com/item/6693092734288265736/',
+        'https://www.toutiao.com/item/6723146523133083652/','https://www.toutiao.com/item/6723146523133083652/','https://www.toutiao.com/item/6723146523133083652/','https://www.toutiao.com/item/6723146523133083652/','https://www.toutiao.com/item/6723146523133083652/','https://www.toutiao.com/item/6723146523133083652/','https://www.toutiao.com/item/6723146523133083652/','https://www.toutiao.com/item/6723146523133083652/',
+                  'https://www.toutiao.com/item/6693566431528747534/',
+                  'https://www.toutiao.com/item/6694322397580886532/',
+                  'https://www.toutiao.com/item/6695830023934312963/',
+                  'https://www.toutiao.com/item/6696902078956044811/',
+                  'https://www.toutiao.com/item/6701582615205380107/',
+                  'https://www.toutiao.com/item/6703103984862756876/',
+                  'https://www.toutiao.com/item/6705089602669003277/',
+                  'https://www.toutiao.com/item/6712845808070296078/',
+                  'https://www.toutiao.com/item/6716099962297385484/',
                   'https://www.toutiao.com/item/6726173343126389256/',
-                  # 'https://www.toutiao.com/item/6729076107489837575/',
+                  'https://www.toutiao.com/item/6729076107489837575/',
+        'https://www.toutiao.com/item/6723146523133083652/',
+        'https://www.toutiao.com/item/6723146523133083652/','https://www.toutiao.com/item/6723146523133083652/',
+        'https://www.toutiao.com/item/6723146523133083652/','https://www.toutiao.com/item/6723146523133083652/',
+        'https://www.toutiao.com/item/6723146523133083652/','https://www.toutiao.com/item/6723146523133083652/',
+        'https://www.toutiao.com/item/6723146523133083652/','https://www.toutiao.com/item/6723146523133083652/',
+
                   ]
 
     def __init__(self, *args, **kwargs):
@@ -54,6 +60,8 @@ class ArticleSpider(Spider):
     def parse(self, response):
         # 处理博客内容
         logging.info(response.url)
+        if 'toutiao.com' not in response.url :
+            return
         data = response.body
         soup = BeautifulSoup(data, "html5lib")
 
