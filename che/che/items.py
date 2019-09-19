@@ -16,3 +16,4 @@ class CheArticleItem(scrapy.Item):
     _keywords = scrapy.Field()
     _content = scrapy.Field()
     _datetime = scrapy.Field()
+    _text = scrapy.Field()
