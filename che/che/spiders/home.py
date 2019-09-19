@@ -4,26 +4,23 @@
 # GitHub  : https://github.com/worry1613
 # @CSDN   : http://blog.csdn.net/worryabout/
 from bs4 import BeautifulSoup
-from scrapy_redis.spiders import RedisSpider
 import json
-import sys
 from scrapy.spiders import Spider
 from scrapy.http import Request
-from scrapy_redis.spiders import RedisSpider
-import logging
-
-
-
 from che.util import getresponsejson,get_js,payload_for_get
+from scrapy_redis_bloomfilter import bloomfilter
+from settings import USERS,REDIS_HOST,REDIS_PORT,REDIS_DB
+import redis
 
+pool = redis.ConnectionPool(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
+rserver = redis.StrictRedis(connection_pool=pool)
+p = rserver.pipeline()
 
+bf = bloomfilter.BloomFilter(rserver,key='user:bloomfilter')
 
-# class BlogUserSpider(RedisSpider):
-class UserSpider(Spider):
-    name = "user"
-    # allowed_domains = ["blog.csdn.net"]
-    # redis_key = USERKEY
-
+# class HomeSpider(RedisSpider):
+class HomeSpider(Spider):
+    name = "home"
     Honey = payload_for_get('', 1, '0')
     _as = Honey['as']
     _cp = Honey['cp']
@@ -38,7 +35,7 @@ class UserSpider(Spider):
         # Dynamically define the allowed domains list.
         domain = kwargs.pop('domain', '')
         self.allowed_domains = filter(None, domain.split(','))
-        super(UserSpider, self).__init__(*args, **kwargs)
+        super(HomeSpider, self).__init__(*args, **kwargs)
 
     def parse(self,response):
         """
@@ -46,18 +43,17 @@ class UserSpider(Spider):
         :param response:
         :return:
         """
-        # strjson = getresponsejson(response)
         bodyjson = json.loads(response._body)
         if not bodyjson:
             return
-        # f = open('data/user_url.txt', 'a+')
         users = ['http://www.toutiao.com' + b['media_url'] for b in bodyjson['data'] if 'media_url' in b]
+        for u in users:
+            if not bf.exists(u):
+                bf.insert(u)
+                p.lpush(USERS, u)
+        p.execute()
 
         max_behot_time = bodyjson['next']['max_behot_time']
-        # for u in users:
-        #     yield Request(url=u, callback=self.parse_user_id, dont_filter=True)
-
-
         Honey = payload_for_get('', 1, str(max_behot_time))
         _as = Honey['as']
         _cp = Honey['cp']
@@ -66,15 +62,6 @@ class UserSpider(Spider):
               '&utm_source=toutiao&widen=1&max_behot_time=%d&max_behot_time_tmp=%d' \
               '&tadrequire=true&as=%s&cp=%s&_signature=%s' % (max_behot_time,max_behot_time,_as,_cp,_sign)
         yield Request(url=url, callback=self.parse, dont_filter=True)
-        #     url = b['personalPage']
-        #     # logging.info('%d,%s' % (u,url))
-        #     f.write('%d,%s\n' % (u,url))
-        # f.close()
-        # self.page += 1
-        # url = 'http://v2.sohu.com/public-api/feed?scene=CHANNEL&sceneId=18&page={}&size=20&' \
-        #       'callback=jQuery11240332517150833070661_156870333332448051&_=156870333333333332448052'.format(str(self.page))
-        # # self.log(url,level=logging.INFO)
-        # yield Request(url=url, callback=self.parse, dont_filter=True)
 
     def parse_user_id(self,response):
         data = response.body
