@@ -46,12 +46,15 @@ class HomeSpider(Spider):
         bodyjson = json.loads(response._body)
         if not bodyjson:
             return
-        users = ['http://www.toutiao.com' + b['media_url'] for b in bodyjson['data'] if 'media_url' in b]
+        users = ['https://www.toutiao.com' + b['media_url'] for b in bodyjson['data'] if 'media_url' in b]
+        # f = open('data/userids.txt','a')
         for u in users:
+            # f.write(u+'\n')
             if not bf.exists(u):
                 bf.insert(u)
                 p.lpush(USERS, u)
         p.execute()
+        # f.close()
 
         max_behot_time = bodyjson['next']['max_behot_time']
         Honey = payload_for_get('', 1, str(max_behot_time))
