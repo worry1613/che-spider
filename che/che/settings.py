@@ -91,3 +91,12 @@ ITEM_PIPELINES = {
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 HTTPERROR_ALLOWED_CODES = [301]
+HOME = 'CAR:HOMEPAGE'
+USERS = 'CAR:USERS'
+ARTICLES = 'CAR:ARTICLES'
+
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+REDIS_DB = 0
+REDIS_PWD = ''
+REDIS_URL = 'redis://root@localhost:6379'

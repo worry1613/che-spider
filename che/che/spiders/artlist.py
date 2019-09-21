@@ -4,22 +4,27 @@
 # GitHub  : https://github.com/worry1613
 # @CSDN   : http://blog.csdn.net/worryabout/
 from bs4 import BeautifulSoup
-from scrapy_redis.spiders import RedisSpider
+from scrapy_redis_bloomfilter import bloomfilter
+from scrapy_redis_bloomfilter.spiders import RedisSpider
 import json
-import sys
-from scrapy.spiders import Spider
+# from scrapy.spiders import Spider
 from scrapy.http import Request
-from scrapy_redis.spiders import RedisSpider
-
+import redis
 from che.util import get_js,payload_for_get
+from settings import USERS,REDIS_HOST,REDIS_PORT,REDIS_DB,ARTICLES
+
+pool = redis.ConnectionPool(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
+rserver = redis.StrictRedis(connection_pool=pool)
+p = rserver.pipeline()
+
+bf = bloomfilter.BloomFilter(rserver,key='articles:bloomfilter')
 
 
-
-# class BlogUserSpider(RedisSpider):
-class ArticlesSpider(Spider):
-    name = "artlist"
-    # redis_key = USERKEY
-    start_urls = ['http://www.toutiao.com/c/user/token/MS4wLjABAAAAz2T7HE2F-fbTc8WdKw_XLKnMdmzhfEGwuNkwbjluXdI/']
+class ArticlesSpider(RedisSpider):
+# class ArticlesSpider(Spider):
+    name = "userarts"
+    redis_key = USERS
+    # start_urls = ['http://www.toutiao.com/c/user/token/MS4wLjABAAAAz2T7HE2F-fbTc8WdKw_XLKnMdmzhfEGwuNkwbjluXdI/']
 
     def __init__(self, *args, **kwargs):
         # Dynamically define the allowed domains list.
@@ -55,11 +60,12 @@ class ArticlesSpider(Spider):
         bodyjson = json.loads(response._body)
         if not bodyjson['data']:
             return
-        articles = ['http://www.toutiao.com' + b['source_url'] for b in bodyjson['data']]
-        fu = open('data/articles.txt','a+')
+        articles = ['https://www.toutiao.com' + b['source_url'] for b in bodyjson['data']]
         for a in articles:
-            fu.write(a+'\n')
-        fu.close()
+            if not bf.exists(a):
+                bf.insert(a)
+                p.lpush(ARTICLES, a)
+        p.execute()
         max_behot_time = bodyjson['next']['max_behot_time']
         userid = response.meta['userid']
         Honey = payload_for_get(userid, 1, str(max_behot_time))
