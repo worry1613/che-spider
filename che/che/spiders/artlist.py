@@ -11,7 +11,7 @@ import json
 from scrapy.http import Request
 import redis
 from che.util import get_js,payload_for_get
-from settings import USERS,REDIS_HOST,REDIS_PORT,REDIS_DB,ARTICLES
+from che.settings import USERS,REDIS_HOST,REDIS_PORT,REDIS_DB,ARTICLES
 
 pool = redis.ConnectionPool(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
 rserver = redis.StrictRedis(connection_pool=pool)

@@ -9,7 +9,7 @@ from scrapy.spiders import Spider
 from scrapy.http import Request
 from che.util import getresponsejson,get_js,payload_for_get
 from scrapy_redis_bloomfilter import bloomfilter
-from settings import USERS,REDIS_HOST,REDIS_PORT,REDIS_DB
+from che.settings import USERS,REDIS_HOST,REDIS_PORT,REDIS_DB,ARTICLES
 import redis
 
 pool = redis.ConnectionPool(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB)
@@ -17,6 +17,17 @@ rserver = redis.StrictRedis(connection_pool=pool)
 p = rserver.pipeline()
 
 bf = bloomfilter.BloomFilter(rserver,key='user:bloomfilter')
+
+#
+# l = rserver.lrange(ARTICLES, 0,-1)
+# f = open('../data/articles.txt','a')
+# f.write('\n'.join([bytes.decode(u) for u in l ]))
+# f.flush()
+# f.close()
+# print(l)
+
+
+
 
 # class HomeSpider(RedisSpider):
 class HomeSpider(Spider):
