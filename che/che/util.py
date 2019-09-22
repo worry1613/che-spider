@@ -6,7 +6,7 @@ from functools import partial
 # from settings import signature_js_func,signature_js_path
 
 
-signature_js_path = 'javascript/signature.js'
+signature_js_path = 'che/javascript/signature.js'
 signature_js_func = 'get_sign'
 
 
