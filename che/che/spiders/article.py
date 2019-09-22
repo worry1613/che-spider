@@ -79,7 +79,13 @@ class ArticleSpider(Spider):
         # con = re.compile(r'articleInfo:((?:.|\n)*?)\,\n\s+commentInfo')
         con = re.compile(r'chineseTag:\s\'([\u4e00-\u9fa5]+)\'\,')
         # self.log(text,level=logging.DEBUG)
-        cate = con.findall(text)[0]
+        try:
+            cate = con.findall(text)[0]
+        except Exception as e :
+            f = open('bad.txt','a')
+            f.write(response.url+'\n')
+            f.close()
+            self.log('%s ---- [[%s]]' %(response.url,text),level=logging.ERROR)
         if '404' in soup.title.text or cate not in CATE:
             return
 
