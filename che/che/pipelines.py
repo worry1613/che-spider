@@ -19,8 +19,8 @@ class ChePipeline(object):
         """
         数据写入文件
         """
-        f = 'data/data.txt'
+        f = 'che/data/data.txt'
         fin = open(f,'a+')
-        fin.write('%s_|||_%s_|||_%s_|||_%s_|||_%s_|||_%s\n' % (_id,_title,_time,'|+|'.join(_tags),_content,_text))
+        fin.write('%s_|||_%s_|||_%s_|||_%s_|||_%s_|||_%s\n' % (_id,_title,_time,'|++|'.join(_tags),_content,_text))
         fin.close()
         return ''
