@@ -86,6 +86,7 @@ class ArticleSpider(Spider):
             f.write(response.url+'\n')
             f.close()
             self.log('%s ---- [[%s]]' %(response.url,text),level=logging.ERROR)
+            return
         if '404' in soup.title.text or cate not in CATE:
             return
 
