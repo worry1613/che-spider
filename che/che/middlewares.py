@@ -4,10 +4,21 @@
 #
 # See documentation in:
 # http://doc.scrapy.org/en/latest/topics/spider-middleware.html
+import time
 
 from scrapy import signals
 import random
 from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
+
+from scrapy.http.response.html import HtmlResponse
+from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+
+from che.settings import PROXY_FILE
+
 
 class CheSpiderMiddleware(object):
     # Not all methods need to be defined. If a method is not defined,
@@ -153,8 +164,8 @@ class RotateUserAgentMiddleware(UserAgentMiddleware):
         if hasattr(spider, 'user_agent'):
             return spider.user_agent
         elif 'SCRAPY' in self.user_agent.upper():
-            # return random.choice(self.user_agent_list)
-            return "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36"
+            return random.choice(self.user_agent_list)
+            # return "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36"
         return random.choice(self.user_agent_list)
 
     def process_request(self, request, spider):
@@ -164,3 +175,72 @@ class RotateUserAgentMiddleware(UserAgentMiddleware):
             request.headers.setdefault('Accept', '*/*')
             request.headers.setdefault('Accept-Language', 'zh-CN',)
             request.headers.setdefault('Connection', 'Keep-Alive')
+
+
+class SeleniumMiddleware(object):
+    def __init__(self):
+        self.op = webdriver.ChromeOptions()
+        options = webdriver.ChromeOptions()
+        # 谷歌无头模式
+        self.op.add_argument('--headless')
+        self.op.add_argument('--disable-gpu')
+        options.add_argument('window-size=1200x800')
+        # 设置中文
+        self.op.add_argument('lang=zh_CN.UTF-8')
+        # 更换头部
+        self.op.add_argument(
+            'User-Agent="Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36"')
+        self.op.add_argument('Accept="*/*"')
+        self.op.add_argument('Accept-Language=zh-CN')
+        self.op.add_argument('Connection=Keep-Alive')
+            # self.op.add_argument(argument='--headless')
+        self.driver = webdriver.Chrome(options=self.op)
+        self.wait = WebDriverWait(self.driver, 10)
+
+    def process_request(self, request, spider):
+        self.driver.get(request.url)
+        try:
+            self.wait.until(EC.presence_of_element_located((By.CLASS_NAME,'article-box')))
+            time.sleep(2)
+            source = self.driver.page_source
+            response = HtmlResponse(url=self.driver.current_url,body=source,request=request,encoding='utf-8')
+            return response
+        except TimeoutException as e:
+            # self.driver.page_source
+            return HtmlResponse(url=request.url, status=500, request=request)
+
+    def __del__(self):
+        self.driver.close()
+
+
+class ProxyMiddleWare(object):
+    """docstring for ProxyMiddleWare"""
+
+    def process_request(self, request, spider):
+        """对request对象加上proxy"""
+        proxy = self.get_random_proxy()
+        print("this is request ip:" + proxy)
+        request.meta['proxy'] = proxy
+
+    def process_response(self, request, response, spider):
+        """对返回的response处理"""
+        # 如果返回的response状态不是200，重新生成当前request对象
+        if response.status != 200:
+            proxy = self.get_random_proxy()
+            print("this is response ip:" + proxy)
+            # 对当前reque加上代理
+            request.meta['proxy'] = proxy
+            return request
+        return response
+
+    def get_random_proxy(self):
+        """随机从文件中读取proxy"""
+        while 1:
+            with open('che/'+PROXY_FILE, 'r') as f:
+                proxies = f.readlines()
+            if proxies:
+                break
+            else:
+                time.sleep(1)
+        proxy = random.choice(proxies).strip()
+        return proxy
