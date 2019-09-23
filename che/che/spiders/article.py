@@ -113,6 +113,11 @@ class ArticleSpider(Spider):
         art = CheArticleItem()
         con = re.compile(r'\s+title:\s\"(.*)\"\,\s+content:\s\"(.*)\"\,\s+groupId')
         art['_title'],art['_content'] =con.findall(text)[0]
+        if not art['_content']:
+            f = open('bad.txt', 'a')
+            f.write(response.url + '\n')
+            f.close()
+            return
         con = re.compile(r'(\\u[0-9a-fA-F]{4})')
         art["_content"] = re.sub(r'(\\u[0-9a-fA-F]{4})',
                                   lambda matched: matched.group(1).encode('utf-8').decode('unicode_escape'),
